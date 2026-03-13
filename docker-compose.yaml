@@ -1,0 +1,21 @@
+services:
+  source:
+    build: 
+      dockerfile: Dockerfile.source
+  sink:
+    build:
+      dockerfile: Dockerfile.sink
+  nes-worker:
+    image: nebulastream/worker:celonis-demo
+  nes-cli:
+    image: nebulastream/nes-cli:celonis-demo
+    command: -d -s nes-worker:8080 -t query.yaml start
+    working_dir: /config
+    volumes:
+      - ./:/config
+    depends_on:
+      - source
+      - sink
+
+
+      

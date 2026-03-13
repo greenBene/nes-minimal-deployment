@@ -1,0 +1,45 @@
+query: |
+  SELECT ID, FIELD1, FIELD2, CONCAT(FIELD1, VARSIZED(" Atal")) AS CON, ID % UINT64(10) AS MATH
+  FROM TCP_SOURCE
+  INTO HTTP_SINK;
+sinks:
+  - name: HTTP_SINK
+    type: HTTP
+    schema:
+      - name: TCP_SOURCE$ID
+        type: UINT64
+      - name: TCP_SOURCE$FIELD1
+        type: VARSIZED
+      - name: TCP_SOURCE$FIELD2
+        type: VARSIZED
+      - name: CON
+        type: VARSIZED
+      - name: MATH
+        type: UINT64
+    config:
+      port: 8081
+      ip_address: sink
+      input_format: CSV
+      endpoint: 'any'
+logical:
+  - name: TCP_SOURCE
+    schema:
+      - name: ID
+        type: UINT64
+      - name: FIELD1
+        type: VARSIZED
+      - name: FIELD2
+        type: VARSIZED
+physical:
+  - logical: TCP_SOURCE
+    type: TCP
+    parser_config:
+      type: CSV
+      tuple_delimiter: "\n"
+      field_delimiter: ","
+    source_config:
+      socket_host: source
+      socket_port: 8080
+      socket_buffer_size: 65536
+      flush_interval_ms: 100
+      connect_timeout_seconds: 60
